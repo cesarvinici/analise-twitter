@@ -13,8 +13,9 @@ setwd("~/Documents/analise-twitter")
 #install.packages("wesanderson") # Paleta de cores
 #install.packages("RColorBrewer")
 # install.packages("rmarkdown")
-
-
+#install.packages("tm")
+#install.packages("igraph")
+#install.packages("ggraph")
 library(mongolite)
 library(stringr)
 library(tibble)
@@ -33,7 +34,7 @@ library(RColorBrewer)
 
 
 # Conecting to mongoDB
-m <- mongo(url = "mongodb://192.168.16.3/", options = ssl_options(weak_cert_validation = T), db="twitter", collection="tweets_lula")
+m <- mongo(url = "mongodb://172.31.0.3/", options = ssl_options(weak_cert_validation = T), db="twitter", collection="tweets_bolsonaro")
 
 #Getting tweets from database and saving on R variable
 tweets <- m$find(
@@ -151,14 +152,14 @@ nb.cols <- 20
 mycolors <- colorRampPalette(brewer.pal(8, "Set2"))(nb.cols)
 
 # Cria um Wordcloud
-png("graficos/wordcloud.png", width = 400, height = 400)
+#png("graficos/wordcloud.png", width = 400, height = 400)
 wordcloud(tokens_tweets_count$word, 
           tokens_tweets_count$n, 
           max.words =50, 
           scale = c(8,.3),
           rot.per=0.1,
           color=mycolors)
-dev.off()
+#dev.off()
 
 # Plotando palavras mais usadas
 tokens_tweets_count %>%
@@ -243,18 +244,23 @@ affin <- tokens_tweets %>%
   mutate(sentiment = positivo - negativo) #%>%
 
 # Cria um gráfico
-ggplot(affin, aes(index,sentiment))+
-  geom_col(show.legend = TRUE)
+# ggplot(affin, aes(index,sentiment))+
+  # geom_col(show.legend = TRUE)
 
 positivo <- sum(affin['positivo'])
 negativo <- sum(affin['negativo'])
-dados <- c('Positivas' = positivo, 'Negativas' = negativo)
-barplot(dados, 
-        main='Diferença entre palavradas dadas como "Positivas" e "Negativas" ',
-        ylab="Qtd. Palavras",
-        xlab ="Sentimento" )
 
 
-dados.frame <- data.frame(dados)
+
+sentimentos <- c("Positivo", "Negativo")
+sentimentos_count <- c(sum(affin['positivo']), sum(affin['negativo']))
+dados <- data.frame(sentimentos, sentimentos_count, stringsAsFactors = FALSE)
+
+ggplot(data = dados, aes(x = sentimentos)) +
+  ylab("Qtd. Palavras") +
+  geom_col(aes(y = sentimentos_count), position = "dodge",fill = "grey50", colour = "black")
+  
+
+
 
 

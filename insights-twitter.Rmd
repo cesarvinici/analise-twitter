@@ -41,7 +41,7 @@ library(RColorBrewer)
 
 
 # Conecting to mongoDB
-m <- mongo(url = "mongodb://192.168.16.3/", options = ssl_options(weak_cert_validation = T), db="twitter", collection="tweets_lula")
+m <- mongo(url = "mongodb://172.31.0.3/", options = ssl_options(weak_cert_validation = T), db="twitter", collection="tweets_lula")
 
 #Getting tweets from database and saving on R variable
 tweets <- m$find(
@@ -121,6 +121,10 @@ stop_words <- add_row(stop_words, word = "cu")
 # stop_words <- add_row(stop_words, word = "kkkkkkkkkkk")
 # stop_words <- add_row(stop_words, word = "kkkkkkkkkkkk")
 
+affin_pt <- read_delim("affin_pt.csv",
+                       ";",escape_double = FALSE, trim_ws = TRUE)
+
+
 # Removing urls
 patternRegexUrl <- 'https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)'
 tweets$text <- str_replace(tweets$text, patternRegexUrl, "") 
@@ -137,6 +141,7 @@ tweets$text <- str_replace_all(tweets$text,  "@\\w+", "") %>%
 
 # SEPARA POR PARLAVRA E REMOVE AS STOPWORDS
 tokens_tweets <- tweets %>%
+  mutate(linenumber = row_number()) %>%
   unnest_tokens(word, text) %>%
   anti_join(stop_words)
 
@@ -281,9 +286,35 @@ Bom, se formos analisar friamente não obtivemos nenhuma grande surpresa nas pal
 
 Vamos analisar! 
 
+```{r echo=FALSE, results="markup"}
+# Analise de Sentimentos (verifica a diferença entre palavras negaticas e positivas)
+  affin <- tokens_tweets %>%
+  inner_join(affin_pt) %>%
+  count(index=linenumber %/% 25, sentiment) %>%
+  spread(sentiment,n,fill=0) %>%
+  mutate(sentiment = positivo - negativo)
+
+positivo <- sum(affin['positivo'])
+negativo <- sum(affin['negativo'])
+
+sentimentos <- c("Positivo", "Negativo")
+sentimentos_count <- c(sum(affin['positivo']), sum(affin['negativo']))
+dados <- data.frame(sentimentos, sentimentos_count, stringsAsFactors = FALSE)
+
+ggplot(data = dados, aes(x = sentimentos)) +
+  ylab("Qtd. Palavras") +
+  geom_col(aes(y = sentimentos_count), position = "dodge",fill = "grey50", colour = "black")
+
+ 
+```
 
 
+Na comparação palavras com um tom mais negativos foram mais "faladas" que as positivas, porém precisamos levar em consideração o contexto, já que "palavrões" foram usados em um tom de positivo, de comemoração.
 
+
+### Bolsonaro
+
+Vamos para a pesquisa utilizando a palavra-chave "Bolsonaro"
 
 
 
