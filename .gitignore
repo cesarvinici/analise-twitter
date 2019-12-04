@@ -1,0 +1,8 @@
+.env
+.RData
+.Rhistory
+*.html
+*.log
+__pycache__/
+env/
+*.tex

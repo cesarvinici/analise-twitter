@@ -1,0 +1,20 @@
+version: '3'
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongo_db
+    ports:
+      - 17017:27017
+    tty: true
+    environment: 
+      MONGODB_PASS: rootpass
+    volumes: 
+      - /files:/data
+  mongo-express:
+    image: mongo-express:latest
+    container_name: mongo-express
+    ports:
+      - 8081:8081
+    environment: 
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_MONGODB_ADMINPASSWORD: rootpass
