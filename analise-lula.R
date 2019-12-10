@@ -101,7 +101,24 @@ stop_words <- add_row(stop_words, word = "k")
 stop_words <- add_row(stop_words, word = "eh")
 stop_words <- add_row(stop_words, word = "vcs")
 stop_words <- add_row(stop_words, word = "cu")
-
+stop_words <- add_row(stop_words, word = "fica")
+stop_words <- add_row(stop_words, word = "deve")
+stop_words <- add_row(stop_words, word = "falando")
+stop_words <- add_row(stop_words, word = "diz")
+stop_words <- add_row(stop_words, word = "tomar")
+stop_words <- add_row(stop_words, word = "lado")
+stop_words <- add_row(stop_words, word = "querem")
+stop_words <- add_row(stop_words, word = "sendo")
+stop_words <- add_row(stop_words, word = "dizer")
+stop_words <- add_row(stop_words, word = "maior")
+stop_words <- add_row(stop_words, word = "saber")
+stop_words <- add_row(stop_words, word = "favor")
+stop_words <- add_row(stop_words, word = "vamos")
+stop_words <- add_row(stop_words, word = "sabe")
+stop_words <- add_row(stop_words, word = "tempo")
+stop_words <- add_row(stop_words, word = "via")
+stop_words <- add_row(stop_words, word = "pau")
+stop_words <- add_row(stop_words, word = "gente")
 # stop_words <- add_row(stop_words, word = "kk")
 # stop_words <- add_row(stop_words, word = "kkk")
 # stop_words <- add_row(stop_words, word = "kkkk")
@@ -145,6 +162,7 @@ tokens_tweets$word = str_replace_all(tokens_tweets$word, " ", "")
   
 # CONTA AS PALAVRAS
 tokens_tweets_count <- tokens_tweets %>%
+  filter(word != "bolsonaro") %>%
   count(word, sort = TRUE)
 
 #Aumenta a paleta de cores
@@ -156,7 +174,7 @@ mycolors <- colorRampPalette(brewer.pal(8, "Set2"))(nb.cols)
 wordcloud(tokens_tweets_count$word, 
           tokens_tweets_count$n, 
           max.words =50, 
-          scale = c(8,.3),
+          scale = c(4,.5),
           rot.per=0.1,
           color=mycolors)
 #dev.off()
@@ -164,8 +182,7 @@ wordcloud(tokens_tweets_count$word,
 # Plotando palavras mais usadas
 tokens_tweets_count %>%
   mutate(word = reorder(word,n)) %>%
-  filter(word != "lula") %>%
-  head(10) %>%
+  head(20) %>%
   ggplot(aes(word,n,fill=factor(word)))+
   scale_fill_manual(values = mycolors)+
   geom_col()+

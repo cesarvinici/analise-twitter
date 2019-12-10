@@ -149,6 +149,7 @@ tokens_tweets$word = str_replace_all(tokens_tweets$word, " ", "")
   
 # CONTA AS PALAVRAS
 tokens_tweets_count <- tokens_tweets %>%
+   filter(word != "lula") %>%
   count(word, sort = TRUE)
 
 #Aumenta a paleta de cores
@@ -190,6 +191,7 @@ wordcloud(tokens_tweets_count$word,
           color=mycolors)
 ```
 
+*ps*: Como a pesquisa no twitter foi realizada usando a palavra-chave "Lula", não faz sentido plotar ela, já que ela vai aparecer em todos os 4.5 mil tweets.
 
 \s Algumas palavras já imaginavámos que iriam aparecer, como "Lula", "Livre" e afins. Percebemos que a palavra 'Bolsonaro' também aparece com uma boa frequência. É possível verificar que algumas pessoas não ficaram muito feliz com a decisão pois as palavras "ladrão" e "bandido" aparecem. Algumas provocações foram feitas para eleitores do Bolsonaro, já que a palavra comumente usada "Bolsominion" também aparece com certa frequência.
 
@@ -199,7 +201,6 @@ Para confirmar algumas previsões, vamos ver um gráfico de barras mostrando a c
 # Plotando palavras mais usadas
 tokens_tweets_count %>%
   mutate(word = reorder(word,n)) %>%
-  filter(word != "lula") %>%
   head(10) %>%
   ggplot(aes(word,n,fill=factor(word)))+
   scale_fill_manual(values = mycolors)+
@@ -208,8 +209,6 @@ tokens_tweets_count %>%
   ylab("Quantidade") +
     coord_flip()
 ```
-
-*ps*: Como a pesquisa no twitter foi realizada usando a palavra-chave "Lula", não faz sentido plotar ela, já que ela vai aparecer em todos os 4.5 mil tweets.
 
 Nenhuma surpresa quando as palavras "livre" (Lula livre) ou solto, Bolsonaro está no top 3 o que pode ser surpreendente e ao mesmo tempo levar à indagação se são eleitores do Bolsonaro ou eleitores do Lula que estão preocupados com o canditado do outro lado do polo?
 
