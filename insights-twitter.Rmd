@@ -41,7 +41,7 @@ library(RColorBrewer)
 
 
 # Conecting to mongoDB
-m <- mongo(url = "mongodb://172.31.0.3/", options = ssl_options(weak_cert_validation = T), db="twitter", collection="tweets_lula")
+m <- mongo(url = "mongodb://172.31.0.2/", options = ssl_options(weak_cert_validation = T), db="twitter", collection="tweets_lula")
 
 #Getting tweets from database and saving on R variable
 tweets <- m$find(
@@ -108,18 +108,24 @@ stop_words <- add_row(stop_words, word = "k")
 stop_words <- add_row(stop_words, word = "eh")
 stop_words <- add_row(stop_words, word = "vcs")
 stop_words <- add_row(stop_words, word = "cu")
+stop_words <- add_row(stop_words, word = "fica")
+stop_words <- add_row(stop_words, word = "deve")
+stop_words <- add_row(stop_words, word = "falando")
+stop_words <- add_row(stop_words, word = "diz")
+stop_words <- add_row(stop_words, word = "tomar")
+stop_words <- add_row(stop_words, word = "lado")
+stop_words <- add_row(stop_words, word = "querem")
+stop_words <- add_row(stop_words, word = "sendo")
+stop_words <- add_row(stop_words, word = "dizer")
+stop_words <- add_row(stop_words, word = "maior")
+stop_words <- add_row(stop_words, word = "saber")
+stop_words <- add_row(stop_words, word = "favor")
+stop_words <- add_row(stop_words, word = "vamos")
+stop_words <- add_row(stop_words, word = "sabe")
+stop_words <- add_row(stop_words, word = "tempo")
+stop_words <- add_row(stop_words, word = "via")
+stop_words <- add_row(stop_words, word = "pau")
 
-# stop_words <- add_row(stop_words, word = "kk")
-# stop_words <- add_row(stop_words, word = "kkk")
-# stop_words <- add_row(stop_words, word = "kkkk")
-# stop_words <- add_row(stop_words, word = "kkkkk")
-# stop_words <- add_row(stop_words, word = "kkkkkk")
-# stop_words <- add_row(stop_words, word = "kkkkkkk")
-# stop_words <- add_row(stop_words, word = "kkkkkkkk")
-# stop_words <- add_row(stop_words, word = "kkkkkkkkk")
-# stop_words <- add_row(stop_words, word = "kkkkkkkkkk")
-# stop_words <- add_row(stop_words, word = "kkkkkkkkkkk")
-# stop_words <- add_row(stop_words, word = "kkkkkkkkkkkk")
 
 affin_pt <- read_delim("affin_pt.csv",
                        ";",escape_double = FALSE, trim_ws = TRUE)
@@ -186,14 +192,14 @@ Vamos primeiro para análise utilizando a *keyword* 'Lula':
 wordcloud(tokens_tweets_count$word, 
           tokens_tweets_count$n, 
           max.words =50, 
-          scale = c(4,1.5),
+          scale = c(8,.5),
           rot.per=0.1,
           color=mycolors)
 ```
 
 *ps*: Como a pesquisa no twitter foi realizada usando a palavra-chave "Lula", não faz sentido plotar ela, já que ela vai aparecer em todos os 4.5 mil tweets.
 
-\s Algumas palavras já imaginavámos que iriam aparecer, como "Lula", "Livre" e afins. Percebemos que a palavra 'Bolsonaro' também aparece com uma boa frequência. É possível verificar que algumas pessoas não ficaram muito feliz com a decisão pois as palavras "ladrão" e "bandido" aparecem. Algumas provocações foram feitas para eleitores do Bolsonaro, já que a palavra comumente usada "Bolsominion" também aparece com certa frequência.
+\s Algumas palavras já imaginavámos que iriam aparecer, como "Livre" de (Lula Livre) e afins. Percebemos que a palavra 'Bolsonaro' também aparece com uma boa frequência. É possível verificar que algumas pessoas não ficaram muito feliz com a decisão pois as palavras "ladrão" e "bandido" aparecem. Algumas provocações foram feitas para eleitores do Bolsonaro, já que a palavra comumente usada "Bolsominion" também aparece com certa frequência.
 
 Para confirmar algumas previsões, vamos ver um gráfico de barras mostrando a contagem das palavras:
 
@@ -312,9 +318,79 @@ Na comparação palavras com um tom mais negativos foram mais "faladas" que as p
 
 
 ### Bolsonaro
+```{r fig.keep='all', message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE, results='hide'}
+knitr::opts_chunk$set(tidy = TRUE, tidy.opts = list(comment = FALSE))
+m <- mongo(url = "mongodb://172.31.0.2/", options = ssl_options(weak_cert_validation = T), db="twitter", collection="tweets_bolsonaro")
 
+#Getting tweets from database and saving on R variable
+tweets <- m$find(
+  fields = '{"_id": false, "text": true}',
+)
+
+patternRegexUrl <- 'https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)'
+tweets$text <- str_replace(tweets$text, patternRegexUrl, "") 
+patternRegexKs <- 'k{2,}'
+tweets$text <- str_replace(tweets$text, patternRegexKs, "")
+
+
+# Removing @users reference from text
+tweets$text <- str_replace_all(tweets$text,  "@\\w+", "") %>%
+              removePunctuation() %>% # REMOVE PONTUAÇÃO
+              stripWhitespace() # REMOVE ESPAÇOS EM BRANCO E PALAVRAS ACENTUADAS
+
+# Removing emojis
+# tweets$text <- gsub("[^\x01-\x7F]", "", tweets$text)
+
+# SEPARA POR PARLAVRA E REMOVE AS STOPWORDS
+tokens_tweets <- tweets %>%
+  mutate(linenumber = row_number()) %>%
+  unnest_tokens(word, text) %>%
+  anti_join(stop_words)
+
+tokens_tweets$word = str_replace_all(tokens_tweets$word, " ", "")
+  
+# CONTA AS PALAVRAS
+tokens_tweets_count <- tokens_tweets %>%
+  filter(word != "bolsonaro") %>%
+  count(word, sort = TRUE)
+
+#Aumenta a paleta de cores
+nb.cols <- 20
+mycolors <- colorRampPalette(brewer.pal(8, "Set2"))(nb.cols)
+```
 Vamos para a pesquisa utilizando a palavra-chave "Bolsonaro"
 
+*ps*: Da mesma forma que tiramos a palavra-chave Lula, aqui também iremos tirar Bolsonaro, já que, ela aparece em todos os twites.
+
+```{r echo=FALSE}
+wordcloud(tokens_tweets_count$word, 
+          tokens_tweets_count$n, 
+          max.words =50, 
+          scale = c(4,.5),
+          rot.per=0.1,
+          color=mycolors)
+```
+
+Aqui a palavra mais usada foi, Lula. Ou seja, para algumas pessoas é quase impossível falar de um sem falar do outro. Também temos presidente, e Jair, o que é meio óbvio. A palavra filho também aparece na lista, provavelmente direcionada a algum filho politico do Bolsonaro. Percebe-se também que a galera já está preocupada com as eleições de 2022. Algumas pessoas estão brabos com a soltura. o Ex-juiz Sergio Moro também foi bastante citado ao que parece, será que pro bem ou pro mal? Fica da dúvida.
+
+Bom, podemos comprovar algumas teorias olhando a contagem de palavras, vamos lá!
+
+```{r echo=FALSE}
+# Plotando palavras mais usadas
+tokens_tweets_count %>%
+  mutate(word = reorder(word,n)) %>%
+  head(20) %>%
+  ggplot(aes(word,n,fill=factor(word)))+
+  scale_fill_manual(values = mycolors)+
+  geom_col()+
+  xlab("Palavras")+
+  ylab("Quantidade") +
+  coord_flip()
+```
+
+Não se enganem, a palavra-chave ainda é Bolsonaro. Por mais que olhando para o gráfico, existem muitas referências ao PT ou ao Lula. Foram recuperados 3900 twites com a palavra-chave bolsonaro, e em mais de 1500 também aparece a palavra Lula. Lembrando que quando fizemos utilizando a palavra-chave Lula, o qual retornou mais de 4 mil twites, Bolsonaro não chegou a ser citado 500 vezes.
+
+Bigramas, Trigramas e Quadrigramas.
 
 
 

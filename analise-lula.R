@@ -34,7 +34,7 @@ library(RColorBrewer)
 
 
 # Conecting to mongoDB
-m <- mongo(url = "mongodb://172.31.0.3/", options = ssl_options(weak_cert_validation = T), db="twitter", collection="tweets_bolsonaro")
+m <- mongo(url = "mongodb://172.31.0.2/", options = ssl_options(weak_cert_validation = T), db="twitter", collection="tweets_bolsonaro")
 
 #Getting tweets from database and saving on R variable
 tweets <- m$find(
