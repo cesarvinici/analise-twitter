@@ -53,6 +53,7 @@ stop_words <- add_row(stop_words, word = "vem")
 stop_words <- add_row(stop_words, word = "sei")
 stop_words <- add_row(stop_words, word = "sai")
 stop_words <- add_row(stop_words, word = "fala")
+
 stop_words <- add_row(stop_words, word = "fez")
 
 

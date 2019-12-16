@@ -39,9 +39,8 @@ library(igraph)
 library(ggraph)
 library(RColorBrewer)
 
-
 # Conecting to mongoDB
-m <- mongo(url = "mongodb://172.31.0.2/", options = ssl_options(weak_cert_validation = T), db="twitter", collection="tweets_lula")
+m <- mongo(url = "mongodb://172.18.0.3/", options = ssl_options(weak_cert_validation = T), db="twitter", collection="tweets_lula")
 
 #Getting tweets from database and saving on R variable
 tweets <- m$find(
@@ -125,7 +124,20 @@ stop_words <- add_row(stop_words, word = "sabe")
 stop_words <- add_row(stop_words, word = "tempo")
 stop_words <- add_row(stop_words, word = "via")
 stop_words <- add_row(stop_words, word = "pau")
-
+stop_words <- add_row(stop_words, word = "gente")
+stop_words <- add_row(stop_words, word = "ir")
+stop_words <- add_row(stop_words, word = "olha")
+stop_words <- add_row(stop_words, word = "ia")
+stop_words <- add_row(stop_words, word = "coisas")
+stop_words <- add_row(stop_words, word = "visto")
+stop_words <- add_row(stop_words, word = "dá")
+stop_words <- add_row(stop_words, word = "so")
+stop_words <- add_row(stop_words, word = "vi")
+stop_words <- add_row(stop_words, word = "fico")
+stop_words <- add_row(stop_words, word = "tava")
+stop_words <- add_row(stop_words, word = "sair")
+stop_words <- add_row(stop_words, word = "ja")
+stop_words <- add_row(stop_words, word = "deu")
 
 affin_pt <- read_delim("affin_pt.csv",
                        ";",escape_double = FALSE, trim_ws = TRUE)
@@ -320,7 +332,7 @@ Na comparação palavras com um tom mais negativos foram mais "faladas" que as p
 ### Bolsonaro
 ```{r fig.keep='all', message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE, results='hide'}
 knitr::opts_chunk$set(tidy = TRUE, tidy.opts = list(comment = FALSE))
-m <- mongo(url = "mongodb://172.31.0.2/", options = ssl_options(weak_cert_validation = T), db="twitter", collection="tweets_bolsonaro")
+m <- mongo(url = "mongodb://172.18.0.3/", options = ssl_options(weak_cert_validation = T), db="twitter", collection="tweets_bolsonaro")
 
 #Getting tweets from database and saving on R variable
 tweets <- m$find(
@@ -392,6 +404,180 @@ Não se enganem, a palavra-chave ainda é Bolsonaro. Por mais que olhando para o
 
 Bigramas, Trigramas e Quadrigramas.
 
+```{r echo=FALSE}
+
+
+# CRIANDO UM BIGRAMA
+bigrams <- tweets %>%
+  unnest_tokens(bigram, text, token = "ngrams", n = 2) %>% # Separa as palavras de 2 em 2
+  separate(bigram,c("word1","word2"),sep = " ") %>% # Divide entre palavra 1 e palavra 2
+  filter(!word1 %in% as.vector(t(stop_words$word))) %>%
+  filter(!word2 %in% as.vector(t(stop_words$word))) %>% # Filtra as palavras a partir das stop_words
+  unite(bigram,word1,word2,sep = " ") %>%
+  count(bigram, sort = TRUE)
+
+bigrams %>%
+  mutate(bigram = reorder(bigram,n)) %>%
+  head(20) %>%
+  ggplot(aes(bigram,n,fill=factor(bigram)))+
+  scale_fill_manual(values = mycolors)+
+  geom_col()+
+  xlab(NULL)+
+  coord_flip()
+```
+
+Bigramas basicamente com citações à familia Bolsonaro. Interessante ver que mesmo usando a palavra-chave Bolsonaro, o segundo bigrama que mais se repetiu foi "Lula Livre".
+
+
+```{r echo=FALSE} 
+
+# CREATE TRIGAMS
+trigrams <- tweets %>%
+  unnest_tokens(trigrams, text, token = "ngrams", n = 3) %>% # Separa as palavras de 2 em 2
+  separate(trigrams,c("word1","word2", "word3"),sep = " ") %>% # Divide entre palavra 1 e palavra 2
+  filter(!word1 %in% as.vector(t(stop_words$word))) %>%
+  #filter(!word2 %in% as.vector(t(stopwords_pt$word))) %>% # Filtra as palavras a partir das stop_words
+  filter(!word3 %in% as.vector(t(stop_words$word))) %>%
+  unite(trigrams,word1,word2, word3,sep = " ") %>%
+  count(trigrams, sort = TRUE)
+
+trigrams %>%
+  mutate(trigrams = reorder(trigrams,n)) %>%
+  head(9) %>%
+  ggplot(aes(trigrams,n,fill=factor(trigrams)))+
+  scale_fill_manual(values = mycolors) +
+  geom_col()+
+  xlab(NULL)+
+  coord_flip()
+```
+
+Nos trigramas, mais algumas citações e alguns comentários sobre a decisão do STF
+
+
+```{r echo=FALSE}
+quadrams <- tweets %>%
+  unnest_tokens(quadrams, text, token = "ngrams", n = 4) %>% # Separa as palavras de 2 em 2
+  separate(quadrams,c("word1","word2", "word3", "word4"),sep = " ") %>% # Divide entre palavra 1 e palavra 2
+  filter(!word1 %in% as.vector(t(stop_words$word))) %>%
+  #filter(!word2 %in% as.vector(t(stopwords_pt$word))) %>% # Filtra as palavras a partir das stop_words
+  filter(!word4 %in% as.vector(t(stop_words$word))) %>%
+  unite(quadrams,word1,word2, word3, word4,sep = " ") %>%
+  count(quadrams, sort = TRUE)
+
+quadrams %>%
+  mutate(quadrams = reorder(quadrams,n)) %>%
+  head(9) %>%
+  ggplot(aes(quadrams,n,fill=factor(quadrams)))+
+  scale_fill_manual(values = mycolors) +
+  geom_col()+
+  xlab(NULL)+
+  coord_flip()
+
+```
+
+
+Nos quadrigramas podemos verificar alguns comentários de sobre a reporter que chamou o atual presidente de ex presidente.
+
+
+```{r echo=FALSE}
+affin <- tokens_tweets %>%
+  inner_join(affin_pt) %>%
+  count(index=linenumber %/% 25, sentiment) %>%
+  spread(sentiment,n,fill=0) %>%
+  mutate(sentiment = positivo - negativo) #%>%
+
+# Cria um gráfico
+# ggplot(affin, aes(index,sentiment))+
+  # geom_col(show.legend = TRUE)
+
+positivo <- sum(affin['positivo'])
+negativo <- sum(affin['negativo'])
 
 
 
+sentimentos <- c("Positivo", "Negativo")
+sentimentos_count <- c(sum(affin['positivo']), sum(affin['negativo']))
+dados <- data.frame(sentimentos, sentimentos_count, stringsAsFactors = FALSE)
+
+ggplot(data = dados, aes(x = sentimentos)) +
+  ylab("Qtd. Palavras") +
+  geom_col(aes(y = sentimentos_count), position = "dodge",fill = "grey50", colour = "black")
+```
+
+Pesquisa realizada com a palavra-chave bolsonaro retornou dados muito mais negativos, o que acredito já era de se esperar pois já que várias pessoas eram contra a decisão.
+
+
+### Twites Gerais
+
+E se realizassemos uma pesquisa sem usar nenhuma palavra-chave? Será que a maioria dos usuários estão pensando em politica ou não?
+
+Vamos descobrir! 
+
+```{r fig.keep='all', message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE, results='hide'}
+knitr::opts_chunk$set(tidy = TRUE, tidy.opts = list(comment = FALSE))
+m <- mongo(url = "mongodb://172.18.0.3/", options = ssl_options(weak_cert_validation = T), db="twitter", collection="tweets_geral")
+
+#Getting tweets from database and saving on R variable
+tweets <- m$find(
+  fields = '{"_id": false, "text": true}',
+)
+
+patternRegexUrl <- 'https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)'
+tweets$text <- str_replace(tweets$text, patternRegexUrl, "") 
+patternRegexKs <- 'k{2,}'
+tweets$text <- str_replace(tweets$text, patternRegexKs, "")
+
+
+# Removing @users reference from text
+tweets$text <- str_replace_all(tweets$text,  "@\\w+", "") %>%
+              removePunctuation() %>% # REMOVE PONTUAÇÃO
+              stripWhitespace() # REMOVE ESPAÇOS EM BRANCO E PALAVRAS ACENTUADAS
+
+# Removing emojis
+# tweets$text <- gsub("[^\x01-\x7F]", "", tweets$text)
+
+# SEPARA POR PARLAVRA E REMOVE AS STOPWORDS
+tokens_tweets <- tweets %>%
+  mutate(linenumber = row_number()) %>%
+  unnest_tokens(word, text) %>%
+  anti_join(stop_words)
+
+tokens_tweets$word = str_replace_all(tokens_tweets$word, " ", "")
+  
+# CONTA AS PALAVRAS
+tokens_tweets_count <- tokens_tweets %>%
+  filter(word != "bolsonaro") %>%
+  count(word, sort = TRUE)
+
+#Aumenta a paleta de cores
+nb.cols <- 20
+mycolors <- colorRampPalette(brewer.pal(8, "Set2"))(nb.cols)
+```
+```{r echo= FALSE}
+
+# Cria um Wordcloud
+#png("graficos/wordcloud.png", width = 400, height = 400)
+wordcloud(tokens_tweets_count$word, 
+          tokens_tweets_count$n, 
+          max.words =50, 
+          scale = c(3,.2),
+          rot.per=0.1,
+          color=mycolors)
+#dev.off()
+
+# Plotando palavras mais usadas
+tokens_tweets_count %>%
+  mutate(word = reorder(word,n)) %>%
+  head(20) %>%
+  ggplot(aes(word,n,fill=factor(word)))+
+  scale_fill_manual(values = mycolors)+
+  geom_col()+
+  xlab("Palavras")+
+  ylab("Quantidade") +
+  coord_flip()
+
+
+```
+
+Bom, via de regra ao que parece as pessoas não estavam preocupadas com o ocorrido a não ser uma citação ao STF no worldcloud.
+  

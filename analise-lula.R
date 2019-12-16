@@ -34,7 +34,7 @@ library(RColorBrewer)
 
 
 # Conecting to mongoDB
-m <- mongo(url = "mongodb://172.31.0.2/", options = ssl_options(weak_cert_validation = T), db="twitter", collection="tweets_bolsonaro")
+m <- mongo(url = "mongodb://172.18.0.3/", options = ssl_options(weak_cert_validation = T), db="twitter", collection="tweets_lula")
 
 #Getting tweets from database and saving on R variable
 tweets <- m$find(
@@ -119,6 +119,19 @@ stop_words <- add_row(stop_words, word = "tempo")
 stop_words <- add_row(stop_words, word = "via")
 stop_words <- add_row(stop_words, word = "pau")
 stop_words <- add_row(stop_words, word = "gente")
+stop_words <- add_row(stop_words, word = "ir")
+stop_words <- add_row(stop_words, word = "olha")
+stop_words <- add_row(stop_words, word = "ia")
+stop_words <- add_row(stop_words, word = "coisas")
+stop_words <- add_row(stop_words, word = "visto")
+stop_words <- add_row(stop_words, word = "dá")
+stop_words <- add_row(stop_words, word = "so")
+stop_words <- add_row(stop_words, word = "vi")
+stop_words <- add_row(stop_words, word = "fico")
+stop_words <- add_row(stop_words, word = "tava")
+stop_words <- add_row(stop_words, word = "sair")
+stop_words <- add_row(stop_words, word = "ja")
+stop_words <- add_row(stop_words, word = "deu")
 # stop_words <- add_row(stop_words, word = "kk")
 # stop_words <- add_row(stop_words, word = "kkk")
 # stop_words <- add_row(stop_words, word = "kkkk")
@@ -174,7 +187,7 @@ mycolors <- colorRampPalette(brewer.pal(8, "Set2"))(nb.cols)
 wordcloud(tokens_tweets_count$word, 
           tokens_tweets_count$n, 
           max.words =50, 
-          scale = c(4,.5),
+          scale = c(3,.2),
           rot.per=0.1,
           color=mycolors)
 #dev.off()
