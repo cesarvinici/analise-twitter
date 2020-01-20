@@ -1,6 +1,6 @@
 Tweets analysis using Python and R
 
-The R code is set on analisys.R
+The R code is set on analise-lula.R
 
 You can check some insights extracted from the data on insights-twitter.pdf
 
