@@ -41,6 +41,11 @@ tweets <- m$find(
   fields = '{"_id": false, "text": true}',
 )
 
+tweets <- read.csv("tweets.csv", sep = ";", header = TRUE )
+
+tweets <- read_delim("tweets.csv",
+                        ";",escape_double = FALSE, trim_ws = TRUE)
+
 # stop words
 stop_words <- read_delim("stopwords.csv", ";", escape_double = FALSE, trim_ws = TRUE)
 stop_words <- add_row(stop_words, word = "to")
@@ -132,17 +137,6 @@ stop_words <- add_row(stop_words, word = "tava")
 stop_words <- add_row(stop_words, word = "sair")
 stop_words <- add_row(stop_words, word = "ja")
 stop_words <- add_row(stop_words, word = "deu")
-# stop_words <- add_row(stop_words, word = "kk")
-# stop_words <- add_row(stop_words, word = "kkk")
-# stop_words <- add_row(stop_words, word = "kkkk")
-# stop_words <- add_row(stop_words, word = "kkkkk")
-# stop_words <- add_row(stop_words, word = "kkkkkk")
-# stop_words <- add_row(stop_words, word = "kkkkkkk")
-# stop_words <- add_row(stop_words, word = "kkkkkkkk")
-# stop_words <- add_row(stop_words, word = "kkkkkkkkk")
-# stop_words <- add_row(stop_words, word = "kkkkkkkkkk")
-# stop_words <- add_row(stop_words, word = "kkkkkkkkkkk")
-# stop_words <- add_row(stop_words, word = "kkkkkkkkkkkk")
 
 affin_pt <- read_delim("affin_pt.csv",
                        ";",escape_double = FALSE, trim_ws = TRUE)
@@ -182,17 +176,17 @@ tokens_tweets_count <- tokens_tweets %>%
 nb.cols <- 20
 mycolors <- colorRampPalette(brewer.pal(8, "Set2"))(nb.cols)
 
-# Cria um Wordcloud
+# Creates a  WordCloud
 #png("graficos/wordcloud.png", width = 400, height = 400)
 wordcloud(tokens_tweets_count$word, 
           tokens_tweets_count$n, 
           max.words =50, 
-          scale = c(3,.2),
+          scale = c(4,.5),
           rot.per=0.1,
           color=mycolors)
 #dev.off()
 
-# Plotando palavras mais usadas
+# Plot the most used words
 tokens_tweets_count %>%
   mutate(word = reorder(word,n)) %>%
   head(20) %>%
@@ -204,7 +198,7 @@ tokens_tweets_count %>%
   coord_flip()
 
 
-# CRIANDO UM BIGRAMA
+# Creates a Bigram
 bigrams <- tweets %>%
   unnest_tokens(bigram, text, token = "ngrams", n = 2) %>% # Separa as palavras de 2 em 2
   separate(bigram,c("word1","word2"),sep = " ") %>% # Divide entre palavra 1 e palavra 2
@@ -227,7 +221,7 @@ bigrams_graph <- bigrams %>%
   filter(n>5) %>%
   graph_from_data_frame()
 
-# CREATE TRIGAMS
+# TRIGAMS
 trigrams <- tweets %>%
   unnest_tokens(trigrams, text, token = "ngrams", n = 3) %>% # Separa as palavras de 2 em 2
   separate(trigrams,c("word1","word2", "word3"),sep = " ") %>% # Divide entre palavra 1 e palavra 2
@@ -246,7 +240,7 @@ trigrams %>%
   xlab(NULL)+
   coord_flip()
 
-# CREATE TRIGAMS
+# TRIGAMS
 quadrams <- tweets %>%
   unnest_tokens(quadrams, text, token = "ngrams", n = 4) %>% # Separa as palavras de 2 em 2
   separate(quadrams,c("word1","word2", "word3", "word4"),sep = " ") %>% # Divide entre palavra 1 e palavra 2
@@ -256,6 +250,7 @@ quadrams <- tweets %>%
   unite(quadrams,word1,word2, word3, word4,sep = " ") %>%
   count(quadrams, sort = TRUE)
 
+# Quadrams
 quadrams %>%
   mutate(quadrams = reorder(quadrams,n)) %>%
   head(9) %>%
@@ -266,7 +261,7 @@ quadrams %>%
   coord_flip()
 
 
-# Analise de Sentimentos (verifica a diferença entre palavras negaticas e positivas)
+# Sentimental Analisys (checking the diffrence between positive and negative words)
 affin <- tokens_tweets %>%
   inner_join(affin_pt) %>%
   count(index=linenumber %/% 25, sentiment) %>%

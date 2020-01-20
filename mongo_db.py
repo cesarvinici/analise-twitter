@@ -3,9 +3,8 @@ from pymongo import MongoClient
 # better looking outputs
 from pprint import pprint
 
-
-def connect():
-    #Connect to MongoDB
+def connect():	
+    """ Method used to conecct to mongo DB """
 
     db_user = "root"
     db_pass = "rootpass"
