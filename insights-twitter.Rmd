@@ -40,7 +40,7 @@ library(ggraph)
 library(RColorBrewer)
 
 # Conecting to mongoDB
-m <- mongo(url = "mongodb://172.18.0.3/", options = ssl_options(weak_cert_validation = T), db="twitter", collection="tweets_lula")
+m <- mongo(url = "mongodb://172.31.0.2/", options = ssl_options(weak_cert_validation = T), db="twitter", collection="tweets_lula")
 
 #Getting tweets from database and saving on R variable
 tweets <- m$find(
@@ -192,7 +192,7 @@ Como uso uma versão gratuita da API do twitter, a pesquisa foi um tanto limitad
 
 Para realizar este trabalho foi usado Python para coleta e salvamento dos dados em um container docker rodando um MongoDB e R para as analises.
 
-Todo código está disponível no [Github](https://github.com/cesarvinici)
+Todo código está disponível no [Github](https://github.com/cesarvinici/analise-twitter)
 
 ### Lula
 
@@ -332,7 +332,7 @@ Na comparação palavras com um tom mais negativos foram mais "faladas" que as p
 ### Bolsonaro
 ```{r fig.keep='all', message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE, results='hide'}
 knitr::opts_chunk$set(tidy = TRUE, tidy.opts = list(comment = FALSE))
-m <- mongo(url = "mongodb://172.18.0.3/", options = ssl_options(weak_cert_validation = T), db="twitter", collection="tweets_bolsonaro")
+m <- mongo(url = "mongodb://172.31.0.2/", options = ssl_options(weak_cert_validation = T), db="twitter", collection="tweets_bolsonaro")
 
 #Getting tweets from database and saving on R variable
 tweets <- m$find(
@@ -400,7 +400,7 @@ tokens_tweets_count %>%
   coord_flip()
 ```
 
-Não se enganem, a palavra-chave ainda é Bolsonaro. Por mais que olhando para o gráfico, existem muitas referências ao PT ou ao Lula. Foram recuperados 3900 twites com a palavra-chave bolsonaro, e em mais de 1500 também aparece a palavra Lula. Lembrando que quando fizemos utilizando a palavra-chave Lula, o qual retornou mais de 4 mil twites, Bolsonaro não chegou a ser citado 500 vezes.
+Por mais que olhando para o gráfico, existem muitas referências ao PT ou ao Lula. Foram recuperados 3900 twites com a palavra-chave bolsonaro, e em mais de 1500 também aparece a palavra Lula. Lembrando que quando fizemos utilizando a palavra-chave Lula, o qual retornou mais de 4 mil twites, Bolsonaro não chegou a ser citado 500 vezes.
 
 Bigramas, Trigramas e Quadrigramas.
 
@@ -515,7 +515,7 @@ Vamos descobrir!
 
 ```{r fig.keep='all', message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE, results='hide'}
 knitr::opts_chunk$set(tidy = TRUE, tidy.opts = list(comment = FALSE))
-m <- mongo(url = "mongodb://172.18.0.3/", options = ssl_options(weak_cert_validation = T), db="twitter", collection="tweets_geral")
+m <- mongo(url = "mongodb://172.31.0.2/", options = ssl_options(weak_cert_validation = T), db="twitter", collection="tweets_geral")
 
 #Getting tweets from database and saving on R variable
 tweets <- m$find(
@@ -531,7 +531,7 @@ tweets$text <- str_replace(tweets$text, patternRegexKs, "")
 # Removing @users reference from text
 tweets$text <- str_replace_all(tweets$text,  "@\\w+", "") %>%
               removePunctuation() %>% # REMOVE PONTUAÇÃO
-              stripWhitespace() # REMOVE ESPAÇOS EM BRANCO E PALAVRAS ACENTUADAS
+              stripWhitespace() # REMOVE ESPAÇ OS EM BRANCO E PALAVRAS ACENTUADAS
 
 # Removing emojis
 # tweets$text <- gsub("[^\x01-\x7F]", "", tweets$text)
@@ -580,4 +580,12 @@ tokens_tweets_count %>%
 ```
 
 Bom, via de regra ao que parece as pessoas não estavam preocupadas com o ocorrido a não ser uma citação ao STF no worldcloud.
-  
+
+Bom, acredito que nenhuma surpresa nos dados informados, algumas pessoas contentes e outras nem tanto. Muito se falou da Familia Bolsonaro, muito Lula Livre.
+
+Se pegarmos uma amostra de dados sem usar uma palavra-chave podemos percebemos que as pessoas falam tanto assim sobre política.
+
+Bom, espero que os dados acimas possam trazer algum tipo de conhecimento. Qualquer dúvida estou a disposição.
+
+
+
